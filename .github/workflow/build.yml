@@ -1,0 +1,22 @@
+name: Build APK
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Arrange files
+        run: |
+          mkdir -p lib
+          mv -f api.dart chat.dart kit.dart main.dart lib/
+          flutter create --org com.aihub --project-name ai_hub .
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/><application#' android/app/src/main/AndroidManifest.xml
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-hub-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
